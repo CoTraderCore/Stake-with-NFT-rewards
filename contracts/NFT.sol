@@ -105,19 +105,25 @@ contract NFT is ERC721, Ownable {
 
     address seller = offer.seller;
 
+    // transfer token
     _transfer(seller, msg.sender, NFTIndex);
 
     // calculate transfer eth to seller and platform
     uint256 totalReceivedETH = msg.value;
     uint256 platformCommision = totalReceivedETH.div(100).mul(10);
     uint256 sellerAmount = totalReceivedETH.sub(platformCommision);
-    // transfer
+
+    // transfer ETH
     payable(seller).transfer(sellerAmount);
     payable(platformAddress).transfer(platformCommision);
 
     noLongerForSale(NFTIndex);
 
     emit NFTBought(NFTIndex, msg.value, seller, msg.sender);
+  }
+
+  function transfer(address _to, uint256 _tokenId) external {
+    _transfer(msg.sender, _to, _tokenId);
   }
 
   // helper for finish sale for a certain NFT

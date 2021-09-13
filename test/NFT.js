@@ -11,7 +11,7 @@ require('chai')
   .should()
 
 const NFT = artifacts.require('./NFT.sol')
-const vampsSupply = 10
+const nftsSupply = 10
 
 let nft,
     platformAddress
@@ -21,7 +21,7 @@ contract('NFT', function([userOne, userTwo, userThree]) {
 
   async function deployContracts(){
     // deploy contracts
-    nft = await NFT.new(vampsSupply, userOne)
+    nft = await NFT.new(nftsSupply, userOne)
     platformAddress = userOne
   }
 
@@ -30,42 +30,58 @@ contract('NFT', function([userOne, userTwo, userThree]) {
   })
 
   describe('Create NFT', function() {
-    it('Only owner can create new vamp until a certain limit', async function() {
+    it('Only owner can create new nft until a certain limit', async function() {
       assert.equal(await nft.totalSupply(), 0)
       await nft.createNewFor(userOne)
       assert.equal(await nft.totalSupply(), 1)
     })
 
-    it('Nobody can create new vamp after a certain limit', async function() {
+    it('Not owner can NOT create new nft until a certain limit', async function() {
+      assert.equal(await nft.totalSupply(), 0)
+      await nft.createNewFor(userTwo, { from:userTwo })
+      .should.be.rejectedWith(EVMRevert)
+      assert.equal(await nft.totalSupply(), 0)
+    })
+
+    it('Nobody can create new nft after a certain limit', async function() {
       assert.equal(await nft.totalSupply(), 0)
 
-      for(let i = 0; i<vampsSupply; i++){
+      for(let i = 0; i<nftsSupply; i++){
         await nft.createNewFor(userOne)
       }
 
-      assert.equal(await nft.totalSupply(), vampsSupply)
+      assert.equal(await nft.totalSupply(), nftsSupply)
 
       await nft.createNewFor(userOne).should.be.rejectedWith(EVMRevert)
     })
   })
 
+  describe('transfer NFT', function() {
+    it('user can transfer all created NFT up to max index ', async function() {
+      for(let i = 0; i < nftsSupply; i++){
+        await nft.createNewFor(userOne)
+        await nft.transfer(userTwo, i)
+      }
+    })
+  })
+
   describe('Offer and Buy NFT', function() {
-    it('Owner can not offer vamp until all vampires are created', async function() {
+    it('Owner can not offer nft until all nftires are created', async function() {
       await nft.createNewFor(userOne)
       await nft.offerForSale(0, toWei("0.00001"))
       .should.be.rejectedWith(EVMRevert)
     })
 
-    it('Owner can offer vamp after all vampires are created', async function() {
-      for(let i = 0; i<vampsSupply; i++){
+    it('Owner can offer nft after all nftires are created', async function() {
+      for(let i = 0; i<nftsSupply; i++){
         await nft.createNewFor(userOne)
       }
 
       await nft.offerForSale(0, toWei("0.00001"))
     })
 
-    it('Not owner can NOT offer vamp after all vampires are created', async function() {
-      for(let i = 0; i<vampsSupply; i++){
+    it('Not owner can NOT offer nft after all nftires are created', async function() {
+      for(let i = 0; i<nftsSupply; i++){
         await nft.createNewFor(userOne)
       }
 
@@ -74,7 +90,7 @@ contract('NFT', function([userOne, userTwo, userThree]) {
     })
 
     it('User can not buy with less than min eth require', async function() {
-      for(let i = 0; i<vampsSupply; i++){
+      for(let i = 0; i<nftsSupply; i++){
         await nft.createNewFor(userOne)
       }
 
@@ -86,7 +102,7 @@ contract('NFT', function([userOne, userTwo, userThree]) {
     })
 
     it('User can buy with min eth require', async function() {
-      for(let i = 0; i<vampsSupply; i++){
+      for(let i = 0; i<nftsSupply; i++){
         await nft.createNewFor(userOne)
       }
 
@@ -99,7 +115,7 @@ contract('NFT', function([userOne, userTwo, userThree]) {
     })
 
     it('User A can not buy with min eth require, if owner offer for user B', async function() {
-      for(let i = 0; i<vampsSupply; i++){
+      for(let i = 0; i<nftsSupply; i++){
         await nft.createNewFor(userOne)
       }
 
@@ -117,7 +133,7 @@ contract('NFT', function([userOne, userTwo, userThree]) {
 
     it('Saller address and platform address receive ETH from sell', async function() {
 
-      for(let i = 0; i<vampsSupply; i++){
+      for(let i = 0; i<nftsSupply; i++){
         await nft.createNewFor(userThree, { from:userOne })
       }
 
@@ -146,8 +162,8 @@ contract('NFT', function([userOne, userTwo, userThree]) {
       )
     })
 
-    it('User can not buy the same vampire twice', async function() {
-      for(let i = 0; i<vampsSupply; i++){
+    it('User can not buy the same nftire twice', async function() {
+      for(let i = 0; i<nftsSupply; i++){
         await nft.createNewFor(userThree, { from:userOne })
       }
 
