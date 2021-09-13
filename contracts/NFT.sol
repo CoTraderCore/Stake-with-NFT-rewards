@@ -114,7 +114,7 @@ contract NFT is ERC721, Ownable {
     payable(seller).transfer(sellerAmount);
     payable(platformAddress).transfer(platformCommision);
 
-    NFTNoLongerForSale(NFTIndex);
+    noLongerForSale(NFTIndex);
 
     emit NFTBought(NFTIndex, msg.value, seller, msg.sender);
   }
