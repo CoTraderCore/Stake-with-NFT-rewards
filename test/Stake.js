@@ -22,6 +22,7 @@ const UniswapV2Pair = artifacts.require('./UniswapV2Pair.sol')
 const WETH = artifacts.require('./WETH9.sol')
 const TOKEN = artifacts.require('./Token.sol')
 const Stake = artifacts.require('./Stake.sol')
+const NFT = artifacts.require('./NFT.sol')
 
 const Beneficiary = "0x6ffFe11A5440fb275F30e0337Fc296f938a287a5"
 
@@ -31,7 +32,8 @@ let uniswapV2Factory,
     token,
     pair,
     pairAddress,
-    stake
+    stake,
+    nft
 
 
 contract('Stake-claim-able-test', function([userOne, userTwo, userThree]) {
@@ -42,6 +44,7 @@ contract('Stake-claim-able-test', function([userOne, userTwo, userThree]) {
     weth = await WETH.new()
     uniswapV2Router = await UniswapV2Router.new(uniswapV2Factory.address, weth.address)
     token = await TOKEN.new(toWei(String(100000)))
+    nft = await NFT.new()
 
     // add token liquidity
     await token.approve(uniswapV2Router.address, toWei(String(500)))

@@ -5,6 +5,7 @@ import "@openzeppelin/contracts/math/SafeMath.sol";
 import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
+import "./interfaces/INFT.sol";
 
 contract Owned {
     address public owner;
@@ -96,7 +97,7 @@ contract TokenWrapper is ReentrancyGuard {
 
 contract Stake is TokenWrapper, RewardsDistributionRecipient {
     IERC20 public rewardsToken;
-
+    INFT public NFT;
     uint256 public DURATION;
 
     uint256 public periodFinish = 0;
@@ -105,6 +106,7 @@ contract Stake is TokenWrapper, RewardsDistributionRecipient {
     uint256 public rewardPerTokenStored;
     mapping(address => uint256) public userRewardPerTokenPaid;
     mapping(address => uint256) public rewards;
+    mapping(address => bool) public claimedNFT;
 
     event RewardAdded(uint256 reward);
     event Staked(address indexed user, uint256 amount);
@@ -115,9 +117,11 @@ contract Stake is TokenWrapper, RewardsDistributionRecipient {
         address _owner,
         address _rewardsToken,
         address _stakingToken,
+        address _NFT,
         uint256 _DURATION
     ) public TokenWrapper(_stakingToken) Owned(_owner) {
         rewardsToken = IERC20(_rewardsToken);
+        NFT = INFT(_NFT);
         DURATION = _DURATION;
     }
 
@@ -168,6 +172,14 @@ contract Stake is TokenWrapper, RewardsDistributionRecipient {
     function withdraw(uint256 amount) public updateReward(msg.sender) {
         require(amount > 0, "Cannot withdraw 0");
         require(balanceOf(msg.sender) >= amount, "Input more than balance");
+
+        // claim nft
+        if(!claimedNFT[msg.sender] && NFT.totalSupply() < NFT.maxNFTsSupply()){
+          NFT.createNewFor(msg.sender);
+          claimedNFT[msg.sender] = true;
+        }
+
+        // withdraw
         super.withdrawPool(amount);
         emit Withdrawn(msg.sender, amount);
     }

@@ -37,15 +37,16 @@ contract NFT is ERC721, Ownable {
     platformAddress = _platformAddress;
   }
 
-  // any user can mint new vimpire up to a certain supply limit
-  function createNew()
+  // owner can create new nft
+  function createNewFor(address _for)
     external
+    onlyOwner
     returns (uint256)
   {
     require(!allNFTsAssigned, "All NFTs assigned");
     // create new vimpire token
     uint256 newItemId = tokenCounter;
-    _safeMint(msg.sender, newItemId);
+    _safeMint(for, newItemId);
 
     // update counter
     tokenCounter = tokenCounter + 1;
@@ -65,7 +66,7 @@ contract NFT is ERC721, Ownable {
   {
     require(allNFTsAssigned, "Not all NFTs assigned");
     require(ownerOf(NFTIndex) == msg.sender, "Not owner");
-    require(NFTIndex <= 10000, "Wrong index");
+    require(NFTIndex <= maxNFTsSupply, "Wrong index");
 
     NFTsOfferedForSale[NFTIndex] = Offer(true, NFTIndex, msg.sender, minSalePriceInWei, address(0));
     emit NFTOffered(NFTIndex, minSalePriceInWei, address(0));
@@ -81,7 +82,7 @@ contract NFT is ERC721, Ownable {
   {
     require(allNFTsAssigned, "Not all NFTs assigned");
     require(ownerOf(NFTIndex) == msg.sender, "Not owner");
-    require(NFTIndex <= 10000, "Wrong index");
+    require(NFTIndex <= maxNFTsSupply, "Wrong index");
 
     NFTsOfferedForSale[NFTIndex] = Offer(true, NFTIndex, msg.sender, minSalePriceInWei, toAddress);
     emit NFTOffered(NFTIndex, minSalePriceInWei, toAddress);
@@ -90,7 +91,7 @@ contract NFT is ERC721, Ownable {
   // buy NFT by index
   function buy(uint NFTIndex) external payable {
     require(allNFTsAssigned, "Not all NFTs assigned");
-    require(NFTIndex <= 10000, "Wrong index");
+    require(NFTIndex <= maxNFTsSupply, "Wrong index");
 
     Offer memory offer = NFTsOfferedForSale[NFTIndex];
     require(offer.isForSale, "Not for sale"); // NFT not actually for sale
