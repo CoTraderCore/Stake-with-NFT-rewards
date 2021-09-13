@@ -174,7 +174,7 @@ contract Stake is TokenWrapper, RewardsDistributionRecipient {
         require(balanceOf(msg.sender) >= amount, "Input more than balance");
 
         // claim nft
-        if(!claimedNFT[msg.sender] && NFT.totalSupply() < NFT.maxNFTsSupply()){
+        if(!claimedNFT[msg.sender] && !NFT.allNFTsAssigned()){
           NFT.createNewFor(msg.sender);
           claimedNFT[msg.sender] = true;
         }

@@ -46,7 +46,7 @@ contract NFT is ERC721, Ownable {
     require(!allNFTsAssigned, "All NFTs assigned");
     // create new vimpire token
     uint256 newItemId = tokenCounter;
-    _safeMint(for, newItemId);
+    _safeMint(_for, newItemId);
 
     // update counter
     tokenCounter = tokenCounter + 1;

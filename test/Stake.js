@@ -44,7 +44,7 @@ contract('Stake-claim-able-test', function([userOne, userTwo, userThree]) {
     weth = await WETH.new()
     uniswapV2Router = await UniswapV2Router.new(uniswapV2Factory.address, weth.address)
     token = await TOKEN.new(toWei(String(100000)))
-    nft = await NFT.new()
+    nft = await NFT.new(10000, userOne)
 
     // add token liquidity
     await token.approve(uniswapV2Router.address, toWei(String(500)))
@@ -65,8 +65,12 @@ contract('Stake-claim-able-test', function([userOne, userTwo, userThree]) {
       userOne,
       token.address,
       pair.address,
+      nft.address,
       duration.days(30)
     )
+
+    // transfer ownership from nft to stake
+    await nft.transferOwnership(stake.address)
 
     // add some rewards to claim stake
     stake.setRewardsDistribution(userOne)
