@@ -93,6 +93,31 @@ contract('Stake-claim-able-test', function([userOne, userTwo, userThree]) {
     })
   })
 
+  describe('Claim NFT', function() {
+    it('User can not claim without stake', async function() {
+      await stake.claimNFT()
+      .should.be.rejectedWith(EVMRevert)
+    })
+
+    it('User can claim after stake', async function() {
+      // stake
+      const toStake = await pair.balanceOf(userOne)
+      await pair.approve(stake.address, toStake)
+      await stake.stake(toStake)
+      await stake.claimNFT()
+    })
+
+    it('User can not claim twice', async function() {
+      // stake
+      const toStake = await pair.balanceOf(userOne)
+      await pair.approve(stake.address, toStake)
+      await stake.stake(toStake)
+
+      await stake.claimNFT()
+      await stake.claimNFT()
+      .should.be.rejectedWith(EVMRevert)
+    })
+  })
 
   describe('Stake increase rewards logs', function() {
     it('_', async function() {

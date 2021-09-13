@@ -107,6 +107,7 @@ contract Stake is TokenWrapper, RewardsDistributionRecipient {
     mapping(address => uint256) public userRewardPerTokenPaid;
     mapping(address => uint256) public rewards;
     mapping(address => bool) public claimedNFT;
+    mapping(address => bool) public participantOfStake;
 
     event RewardAdded(uint256 reward);
     event Staked(address indexed user, uint256 amount);
@@ -160,6 +161,7 @@ contract Stake is TokenWrapper, RewardsDistributionRecipient {
     function stake(uint256 amount) public updateReward(msg.sender) {
         require(amount > 0, "Cannot stake 0");
         super.stakePool(amount);
+        participantOfStake[msg.sender] = true;
         emit Staked(msg.sender, amount);
     }
 
@@ -172,14 +174,6 @@ contract Stake is TokenWrapper, RewardsDistributionRecipient {
     function withdraw(uint256 amount) public updateReward(msg.sender) {
         require(amount > 0, "Cannot withdraw 0");
         require(balanceOf(msg.sender) >= amount, "Input more than balance");
-
-        // claim nft
-        if(!claimedNFT[msg.sender] && !NFT.allNFTsAssigned()){
-          NFT.createNewFor(msg.sender);
-          claimedNFT[msg.sender] = true;
-        }
-
-        // withdraw
         super.withdrawPool(amount);
         emit Withdrawn(msg.sender, amount);
     }
@@ -187,6 +181,15 @@ contract Stake is TokenWrapper, RewardsDistributionRecipient {
     function exit() external {
         withdraw(balanceOf(msg.sender));
         getReward();
+    }
+
+    function claimNFT() external {
+      require(participantOfStake[msg.sender], "Not participant");
+      require(!claimedNFT[msg.sender], "Alredy claimed");
+      require(!NFT.allNFTsAssigned(), "All NFT minted");
+
+      NFT.createNewFor(msg.sender);
+      claimedNFT[msg.sender] = true;
     }
 
     function getReward() public updateReward(msg.sender) {
