@@ -21,7 +21,7 @@ const UniswapV2Router = artifacts.require('./UniswapV2Router02.sol')
 const UniswapV2Pair = artifacts.require('./UniswapV2Pair.sol')
 const WETH = artifacts.require('./WETH9.sol')
 const TOKEN = artifacts.require('./Token.sol')
-const StakeClaim = artifacts.require('./StakeClaim.sol')
+const Stake = artifacts.require('./Stake.sol')
 
 const Beneficiary = "0x6ffFe11A5440fb275F30e0337Fc296f938a287a5"
 
@@ -31,7 +31,7 @@ let uniswapV2Factory,
     token,
     pair,
     pairAddress,
-    stakeClaim
+    stake
 
 
 contract('Stake-claim-able-test', function([userOne, userTwo, userThree]) {
@@ -58,7 +58,7 @@ contract('Stake-claim-able-test', function([userOne, userTwo, userThree]) {
     pairAddress = await uniswapV2Factory.allPairs(0)
     pair = await UniswapV2Pair.at(pairAddress)
 
-    stakeClaim = await StakeClaim.new(
+    stake = await Stake.new(
       userOne,
       token.address,
       pair.address,
@@ -66,9 +66,9 @@ contract('Stake-claim-able-test', function([userOne, userTwo, userThree]) {
     )
 
     // add some rewards to claim stake
-    stakeClaim.setRewardsDistribution(userOne)
-    token.transfer(stakeClaim.address, toWei(String(1)))
-    stakeClaim.notifyRewardAmount(toWei(String(1)))
+    stake.setRewardsDistribution(userOne)
+    token.transfer(stake.address, toWei(String(1)))
+    stake.notifyRewardAmount(toWei(String(1)))
 
     // send some tokens to another users
     await token.transfer(userTwo, toWei(String(1)))
@@ -81,8 +81,8 @@ contract('Stake-claim-able-test', function([userOne, userTwo, userThree]) {
 
   describe('INIT stake', function() {
     it('Correct init Stake', async function() {
-      assert.equal(await stakeClaim.rewardsToken(), token.address)
-      assert.equal(await stakeClaim.stakingToken(), pair.address)
+      assert.equal(await stake.rewardsToken(), token.address)
+      assert.equal(await stake.stakingToken(), pair.address)
     })
   })
 
@@ -90,17 +90,17 @@ contract('Stake-claim-able-test', function([userOne, userTwo, userThree]) {
   describe('Stake increase rewards logs', function() {
     it('_', async function() {
       // stake should not have any pool
-      assert.equal(await pair.balanceOf(stakeClaim.address), 0)
+      assert.equal(await pair.balanceOf(stake.address), 0)
       // amount to stake
       const toStake = await pair.balanceOf(userOne)
       assert.isTrue(toStake > 0)
       // stake
-      await pair.approve(stakeClaim.address, toStake)
-      await stakeClaim.stake(toStake)
+      await pair.approve(stake.address, toStake)
+      await stake.stake(toStake)
       // stake should get pool
-      assert.equal(Number(await pair.balanceOf(stakeClaim.address)), Number(toStake))
+      assert.equal(Number(await pair.balanceOf(stake.address)), Number(toStake))
       // shares should be same as stake
-      const shares = await stakeClaim.balanceOf(userOne)
+      const shares = await stake.balanceOf(userOne)
       assert.equal(Number(shares), Number(toStake))
 
       // logs eraned
@@ -110,7 +110,7 @@ contract('Stake-claim-able-test', function([userOne, userTwo, userThree]) {
         await timeMachine.advanceTimeAndBlock(duration.days(5))
         console.log(
           "Day ", curDay, " - ",
-          Number(fromWei(String(await stakeClaim.earned(userOne)))).toFixed(2), "Earned "
+          Number(fromWei(String(await stake.earned(userOne)))).toFixed(2), "Earned "
         )
 
         curDay = curDay+5
@@ -121,9 +121,9 @@ contract('Stake-claim-able-test', function([userOne, userTwo, userThree]) {
       assert.equal(await token.balanceOf(userOne), 0)
 
       // withdraw
-      await stakeClaim.exit()
+      await stake.exit()
       // stake should send all pools
-      assert.equal(await pair.balanceOf(stakeClaim.address), 0)
+      assert.equal(await pair.balanceOf(stake.address), 0)
       // user should get back all pools
       assert.equal(Number(await pair.balanceOf(userOne)), Number(toStake))
       // user should get stake rewards
@@ -132,24 +132,24 @@ contract('Stake-claim-able-test', function([userOne, userTwo, userThree]) {
 
     it('_', async function() {
       // stake should not have any pool
-      assert.equal(await pair.balanceOf(stakeClaim.address), 0)
+      assert.equal(await pair.balanceOf(stake.address), 0)
       // amount to stake
       const toStake = await pair.balanceOf(userOne)
       assert.isTrue(toStake > 0)
       // stake
-      await pair.approve(stakeClaim.address, toStake)
-      await stakeClaim.stake(toStake)
+      await pair.approve(stake.address, toStake)
+      await stake.stake(toStake)
       // stake should get pool
-      assert.equal(Number(await pair.balanceOf(stakeClaim.address)), Number(toStake))
+      assert.equal(Number(await pair.balanceOf(stake.address)), Number(toStake))
       // shares should be same as stake
-      const shares = await stakeClaim.balanceOf(userOne)
+      const shares = await stake.balanceOf(userOne)
       assert.equal(Number(shares), Number(toStake))
 
 
       // add new rewards
-      await token.transfer(stakeClaim.address, toWei(String(1)))
-      await stakeClaim.notifyRewardAmount(toWei(String(1)))
-      assert.equal(await token.balanceOf(stakeClaim.address), toWei(String(2)))
+      await token.transfer(stake.address, toWei(String(1)))
+      await stake.notifyRewardAmount(toWei(String(1)))
+      assert.equal(await token.balanceOf(stake.address), toWei(String(2)))
 
       // logs eraned
       console.log("with add new rewards, total rewards 2 COT")
@@ -158,7 +158,7 @@ contract('Stake-claim-able-test', function([userOne, userTwo, userThree]) {
         await timeMachine.advanceTimeAndBlock(duration.days(5))
         console.log(
           "Day ", curDay, " - ",
-          Number(fromWei(String(await stakeClaim.earned(userOne)))).toFixed(2), "Earned "
+          Number(fromWei(String(await stake.earned(userOne)))).toFixed(2), "Earned "
         )
 
         curDay = curDay+5
@@ -169,9 +169,9 @@ contract('Stake-claim-able-test', function([userOne, userTwo, userThree]) {
       assert.equal(await token.balanceOf(userOne), 0)
 
       // withdraw
-      await stakeClaim.exit()
+      await stake.exit()
       // stake should send all pools
-      assert.equal(await pair.balanceOf(stakeClaim.address), 0)
+      assert.equal(await pair.balanceOf(stake.address), 0)
       // user should get back all pools
       assert.equal(Number(await pair.balanceOf(userOne)), Number(toStake))
       // user should get stake rewards
@@ -183,23 +183,23 @@ contract('Stake-claim-able-test', function([userOne, userTwo, userThree]) {
   describe('Stake', function() {
     it('Can be staked and withdrawed', async function() {
       // stake should not have any pool
-      assert.equal(await pair.balanceOf(stakeClaim.address), 0)
+      assert.equal(await pair.balanceOf(stake.address), 0)
       // amount to stake
       const toStake = await pair.balanceOf(userOne)
       assert.isTrue(toStake > 0)
       // stake
-      await pair.approve(stakeClaim.address, toStake)
-      await stakeClaim.stake(toStake)
+      await pair.approve(stake.address, toStake)
+      await stake.stake(toStake)
       // stake should get pool
-      assert.equal(Number(await pair.balanceOf(stakeClaim.address)), Number(toStake))
+      assert.equal(Number(await pair.balanceOf(stake.address)), Number(toStake))
       // shares should be same as stake
-      const shares = await stakeClaim.balanceOf(userOne)
+      const shares = await stake.balanceOf(userOne)
       assert.equal(Number(shares), Number(toStake))
       await timeMachine.advanceTimeAndBlock(duration.days(31))
       // exit
-      await stakeClaim.exit()
+      await stake.exit()
       // stake should send all pools
-      assert.equal(await pair.balanceOf(stakeClaim.address), 0)
+      assert.equal(await pair.balanceOf(stake.address), 0)
       // user should get back all pools
       assert.equal(Number(await pair.balanceOf(userOne)), Number(toStake))
     })
@@ -207,21 +207,21 @@ contract('Stake-claim-able-test', function([userOne, userTwo, userThree]) {
     it('User should get rewards after time', async function() {
       // stake
       const toStake = await pair.balanceOf(userOne)
-      await pair.approve(stakeClaim.address, toStake)
-      await stakeClaim.stake(toStake)
+      await pair.approve(stake.address, toStake)
+      await stake.stake(toStake)
       // check rewards
-      const stakeRewards = await token.balanceOf(stakeClaim.address)
+      const stakeRewards = await token.balanceOf(stake.address)
       assert.isTrue(stakeRewards > 0)
       const tokenBalanceBefore = await token.balanceOf(userOne)
 
       // increase time
       await timeMachine.advanceTimeAndBlock(duration.days(36))
-      const calculateRewards = Number(toStake) * Number(await stakeClaim.rewardPerToken())
+      const calculateRewards = Number(toStake) * Number(await stake.rewardPerToken())
       // console.log(Number(toStake))
-      // console.log(Number(await stakeClaim.rewardPerToken()))
+      // console.log(Number(await stake.rewardPerToken()))
       // console.log(Number(calculateRewards).toLocaleString('fullwide', {useGrouping:false}))
       // withdraw
-      await stakeClaim.exit()
+      await stake.exit()
       // user should get all rewards
       assert.isTrue(Number(await token.balanceOf(userOne)) > Number(tokenBalanceBefore))
     })
@@ -229,41 +229,41 @@ contract('Stake-claim-able-test', function([userOne, userTwo, userThree]) {
     it('eranedByShare should be the same as earned', async function() {
       // stake
       const toStake = await pair.balanceOf(userOne)
-      await pair.approve(stakeClaim.address, toStake)
-      await stakeClaim.stake(toStake)
+      await pair.approve(stake.address, toStake)
+      await stake.stake(toStake)
       // increase time
       await timeMachine.advanceTimeAndBlock(duration.days(31))
       assert.equal(
-        Number(await stakeClaim.earned(userOne)),
-        Number(await stakeClaim.earnedByShare(await stakeClaim.balanceOf(userOne)))
+        Number(await stake.earned(userOne)),
+        Number(await stake.earnedByShare(await stake.balanceOf(userOne)))
       )
     })
 
     it('User who join early get more rewards', async function() {
       // stake 1 pool token from user 1
-      await pair.approve(stakeClaim.address, toWei(String(1)))
-      await stakeClaim.stake(toWei(String(1)))
+      await pair.approve(stake.address, toWei(String(1)))
+      await stake.stake(toWei(String(1)))
       // increase time
       await timeMachine.advanceTimeAndBlock(duration.days(15))
 
       await pair.transfer(userTwo, toWei(String(1)))
       // stake 1 pool token from user 2
-      await pair.approve(stakeClaim.address, toWei(String(1)), {from:userTwo})
-      await stakeClaim.stake(toWei(String(1)), {from:userTwo})
+      await pair.approve(stake.address, toWei(String(1)), {from:userTwo})
+      await stake.stake(toWei(String(1)), {from:userTwo})
       await timeMachine.advanceTimeAndBlock(duration.days(15))
-      assert.isTrue(Number(await stakeClaim.earned(userOne)) > Number(await stakeClaim.earned(userTwo)))
+      assert.isTrue(Number(await stake.earned(userOne)) > Number(await stake.earned(userTwo)))
     })
 
     it('User who join early get more rewards via use stakeFor', async function() {
       // stake 1 pool token from user 1
-      await pair.approve(stakeClaim.address, toWei(String(2)))
-      await stakeClaim.stakeFor(toWei(String(1)), userOne)
+      await pair.approve(stake.address, toWei(String(2)))
+      await stake.stakeFor(toWei(String(1)), userOne)
       // increase time
       await timeMachine.advanceTimeAndBlock(duration.days(15))
       // stake 1 pool token from user 1 for user 2
-      await stakeClaim.stakeFor(toWei(String(1)), userTwo)
+      await stake.stakeFor(toWei(String(1)), userTwo)
       await timeMachine.advanceTimeAndBlock(duration.days(15))
-      assert.isTrue(Number(await stakeClaim.earned(userOne)) > Number(await stakeClaim.earned(userTwo)))
+      assert.isTrue(Number(await stake.earned(userOne)) > Number(await stake.earned(userTwo)))
     })
 
     it('Users who join in the same time get the same rewards even if exit not in the same time even if exit much later', async function() {
@@ -272,14 +272,14 @@ contract('Stake-claim-able-test', function([userOne, userTwo, userThree]) {
       await token.transfer(userThree, await token.balanceOf(userTwo), { from:userTwo })
 
       // stake 1 pool token from user 1
-      await pair.approve(stakeClaim.address, toWei(String(2)))
-      await stakeClaim.stakeFor(toWei(String(1)), userOne)
-      await stakeClaim.stakeFor(toWei(String(1)), userTwo)
+      await pair.approve(stake.address, toWei(String(2)))
+      await stake.stakeFor(toWei(String(1)), userOne)
+      await stake.stakeFor(toWei(String(1)), userTwo)
       await timeMachine.advanceTimeAndBlock(duration.days(31))
 
       assert.equal(
-        Number(await stakeClaim.earned(userOne)),
-        Number(await stakeClaim.earned(userTwo))
+        Number(await stake.earned(userOne)),
+        Number(await stake.earned(userTwo))
       )
 
       // users not hold any rewards
@@ -288,10 +288,10 @@ contract('Stake-claim-able-test', function([userOne, userTwo, userThree]) {
 
       // exit
       await timeMachine.advanceTimeAndBlock(duration.days(31))
-      await stakeClaim.exit( {from:userOne} )
+      await stake.exit( {from:userOne} )
 
       await timeMachine.advanceTimeAndBlock(duration.days(31))
-      await stakeClaim.exit( {from:userTwo} )
+      await stake.exit( {from:userTwo} )
 
       assert.isTrue(Number(await token.balanceOf(userTwo)) > 0)
 
@@ -303,20 +303,20 @@ contract('Stake-claim-able-test', function([userOne, userTwo, userThree]) {
 
     it('User who join 2 times via use stakeFor not lose rewards', async function() {
       // stake 1 pool token from user 1
-      await pair.approve(stakeClaim.address, toWei(String(3)))
-      await stakeClaim.stakeFor(toWei(String(1)), userOne)
+      await pair.approve(stake.address, toWei(String(3)))
+      await stake.stakeFor(toWei(String(1)), userOne)
       // increase time
       await timeMachine.advanceTimeAndBlock(duration.days(15))
       // stake 1 pool token from user 1 for user 2
-      await stakeClaim.stakeFor(toWei(String(1)), userTwo)
+      await stake.stakeFor(toWei(String(1)), userTwo)
       // add small amount from user 1
-      const userOneBeforeDeposit = Number(await stakeClaim.earned(userOne))
-      await stakeClaim.stakeFor(toWei(String(0.01)), userOne)
+      const userOneBeforeDeposit = Number(await stake.earned(userOne))
+      await stake.stakeFor(toWei(String(0.01)), userOne)
       // increase time
       await timeMachine.advanceTimeAndBlock(duration.days(15))
       // user 1 shouldnt lose rewards
-      assert.isTrue(Number(await stakeClaim.earned(userOne)) > userOneBeforeDeposit)
-      assert.isTrue(Number(await stakeClaim.earned(userOne)) > Number(await stakeClaim.earned(userTwo)))
+      assert.isTrue(Number(await stake.earned(userOne)) > userOneBeforeDeposit)
+      assert.isTrue(Number(await stake.earned(userOne)) > Number(await stake.earned(userTwo)))
     })
 
     it('User A claim not affect to user B rewards', async function() {
@@ -324,24 +324,24 @@ contract('Stake-claim-able-test', function([userOne, userTwo, userThree]) {
       await token.transfer(userThree, await token.balanceOf(userOne))
       await token.transfer(userThree, await token.balanceOf(userTwo), { from:userTwo })
       // stake 1 pool token from user 1
-      await pair.approve(stakeClaim.address, toWei(String(3)))
-      await stakeClaim.stakeFor(toWei(String(1)), userOne)
+      await pair.approve(stake.address, toWei(String(3)))
+      await stake.stakeFor(toWei(String(1)), userOne)
       // increase time
       await timeMachine.advanceTimeAndBlock(duration.days(15))
       // stake 1 pool token from user 1 for user 2
-      await stakeClaim.stakeFor(toWei(String(1)), userTwo)
+      await stake.stakeFor(toWei(String(1)), userTwo)
       // increase time
       await timeMachine.advanceTimeAndBlock(duration.days(15))
-      const userOneEarned = await stakeClaim.earned(userOne)
-      const userTwoEarned = await stakeClaim.earned(userTwo)
+      const userOneEarned = await stake.earned(userOne)
+      const userTwoEarned = await stake.earned(userTwo)
 
       // call few times from user 1
-      await stakeClaim.getReward()
-      await stakeClaim.getReward()
-      await stakeClaim.getReward()
+      await stake.getReward()
+      await stake.getReward()
+      await stake.getReward()
 
       // call from user 2
-      await stakeClaim.getReward({ from:userTwo })
+      await stake.getReward({ from:userTwo })
 
       assert.equal(Number(userOneEarned), Number(await token.balanceOf(userOne)))
       assert.equal(Number(userTwoEarned), Number(await token.balanceOf(userTwo)))
@@ -350,24 +350,24 @@ contract('Stake-claim-able-test', function([userOne, userTwo, userThree]) {
     it('Destributor can rescue rewards', async function() {
       // stake
       const toStake = await pair.balanceOf(userOne)
-      await pair.approve(stakeClaim.address, toStake)
-      await stakeClaim.stake(toStake)
-      await stakeClaim.exit()
+      await pair.approve(stake.address, toStake)
+      await stake.stake(toStake)
+      await stake.exit()
       // send some remains
-      await token.transfer(stakeClaim.address, 100);
-      assert.isTrue(await token.balanceOf(stakeClaim.address) > 0)
-      await stakeClaim.inCaseRewardsStuck()
+      await token.transfer(stake.address, 100);
+      assert.isTrue(await token.balanceOf(stake.address) > 0)
+      await stake.inCaseRewardsStuck()
       // should burn remains
-      assert.equal(await token.balanceOf(stakeClaim.address), 0)
+      assert.equal(await token.balanceOf(stake.address), 0)
     })
 
     it('Not destributor can NOT rescue rewards', async function() {
       // stake
       const toStake = await pair.balanceOf(userOne)
-      await pair.approve(stakeClaim.address, toStake)
-      await stakeClaim.stake(toStake)
-      await stakeClaim.exit()
-      await stakeClaim.inCaseRewardsStuck({from:userTwo})
+      await pair.approve(stake.address, toStake)
+      await stake.stake(toStake)
+      await stake.exit()
+      await stake.inCaseRewardsStuck({from:userTwo})
       .should.be.rejectedWith(EVMRevert)
     })
   })
