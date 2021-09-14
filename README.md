@@ -1,6 +1,6 @@
-# COT-Stake
+# Stake with nft rewards
 ```
-Stake pool token, get rewards
+NFT => allow Stake mint
 ```
 
 

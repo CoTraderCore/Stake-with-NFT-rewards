@@ -122,6 +122,7 @@ contract NFT is ERC721, Ownable {
     emit NFTBought(NFTIndex, msg.value, seller, msg.sender);
   }
 
+  // transfer to another address 
   function transfer(address _to, uint256 _tokenId) external {
     _transfer(msg.sender, _to, _tokenId);
   }
