@@ -100,11 +100,13 @@ contract('Stake-claim-able-test', function([userOne, userTwo, userThree]) {
     })
 
     it('User can claim after stake', async function() {
+      assert.equal(await nft.balanceOf(userOne), 0)
       // stake
       const toStake = await pair.balanceOf(userOne)
       await pair.approve(stake.address, toStake)
       await stake.stake(toStake)
       await stake.claimNFT()
+      assert.equal(await nft.balanceOf(userOne), 1)
     })
 
     it('User can not claim twice', async function() {
