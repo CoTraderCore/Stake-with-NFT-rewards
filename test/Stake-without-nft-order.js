@@ -21,8 +21,8 @@ const UniswapV2Router = artifacts.require('./UniswapV2Router02.sol')
 const UniswapV2Pair = artifacts.require('./UniswapV2Pair.sol')
 const WETH = artifacts.require('./WETH9.sol')
 const TOKEN = artifacts.require('./Token.sol')
-const Stake = artifacts.require('./StakeOrderBasedNFT.sol')
-const NFT = artifacts.require('./NFTOrderBased.sol')
+const Stake = artifacts.require('./StakeWithoutOrderNFT.sol')
+const NFT = artifacts.require('./NFTWithoutOrder.sol')
 
 const Beneficiary = "0x6ffFe11A5440fb275F30e0337Fc296f938a287a5"
 
@@ -36,7 +36,7 @@ let uniswapV2Factory,
     nft
 
 
-contract('Stake-nft-order-based', function([userOne, userTwo, userThree]) {
+contract('Stake-without-nft-order', function([userOne, userTwo, userThree]) {
 
   async function deployContracts(){
     // deploy contracts
@@ -66,7 +66,8 @@ contract('Stake-nft-order-based', function([userOne, userTwo, userThree]) {
       token.address,
       pair.address,
       nft.address,
-      duration.days(30)
+      duration.days(30),
+      100
     )
 
     // transfer ownership from nft to stake

@@ -5,7 +5,7 @@ import "@openzeppelin/contracts/math/SafeMath.sol";
 import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
-import "./interfaces/INFT.sol";
+import "./interfaces/INFTWithoutOrder.sol";
 
 contract Owned {
     address public owner;
@@ -95,15 +95,18 @@ contract TokenWrapper is ReentrancyGuard {
 }
 
 
-contract Stake is TokenWrapper, RewardsDistributionRecipient {
+contract StakeWithoutOrderNFT is TokenWrapper, RewardsDistributionRecipient {
     IERC20 public rewardsToken;
-    INFT public NFT;
+    INFTWithoutOrder public NFT;
     uint256 public DURATION;
 
     uint256 public periodFinish = 0;
     uint256 public rewardRate = 0;
     uint256 public lastUpdateTime;
     uint256 public rewardPerTokenStored;
+    uint256 public maxAmountNFTForClaim;
+    uint256 public totalClaimedNFT;
+
     mapping(address => uint256) public userRewardPerTokenPaid;
     mapping(address => uint256) public rewards;
     mapping(address => bool) public claimedNFT;
@@ -119,11 +122,13 @@ contract Stake is TokenWrapper, RewardsDistributionRecipient {
         address _rewardsToken,
         address _stakingToken,
         address _NFT,
-        uint256 _DURATION
+        uint256 _DURATION,
+        uint256 _maxAmountNFTForClaim
     ) public TokenWrapper(_stakingToken) Owned(_owner) {
         rewardsToken = IERC20(_rewardsToken);
-        NFT = INFT(_NFT);
+        NFT = INFTWithoutOrder(_NFT);
         DURATION = _DURATION;
+        maxAmountNFTForClaim = _maxAmountNFTForClaim;
     }
 
     modifier updateReward(address account) {
@@ -186,10 +191,11 @@ contract Stake is TokenWrapper, RewardsDistributionRecipient {
     function claimNFT() external {
       require(participantOfStake[msg.sender], "Not participant");
       require(!claimedNFT[msg.sender], "Alredy claimed");
-      require(!NFT.allNFTsAssigned(), "All NFT minted");
+      require(totalClaimedNFT <= maxAmountNFTForClaim, "Claim finished");
 
-      NFT.createNewFor(msg.sender);
+      NFT.createNewFor(msg.sender, totalClaimedNFT);
       claimedNFT[msg.sender] = true;
+      totalClaimedNFT = totalClaimedNFT + 1;
     }
 
     function getReward() public updateReward(msg.sender) {
