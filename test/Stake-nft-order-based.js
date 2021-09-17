@@ -22,7 +22,7 @@ const UniswapV2Pair = artifacts.require('./UniswapV2Pair.sol')
 const WETH = artifacts.require('./WETH9.sol')
 const TOKEN = artifacts.require('./Token.sol')
 const Stake = artifacts.require('./Stake.sol')
-const NFT = artifacts.require('./NFT.sol')
+const NFT = artifacts.require('./NFTOrderBased.sol')
 
 const Beneficiary = "0x6ffFe11A5440fb275F30e0337Fc296f938a287a5"
 
@@ -36,7 +36,7 @@ let uniswapV2Factory,
     nft
 
 
-contract('Stake-claim-able-test', function([userOne, userTwo, userThree]) {
+contract('Stake-nft-order-based', function([userOne, userTwo, userThree]) {
 
   async function deployContracts(){
     // deploy contracts

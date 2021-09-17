@@ -10,14 +10,14 @@ require('chai')
   .use(require('chai-bignumber')(BigNumber))
   .should()
 
-const NFT = artifacts.require('./NFT.sol')
+const NFT = artifacts.require('./NFTOrderBased.sol')
 const nftsSupply = 10
 
 let nft,
     platformAddress
 
 
-contract('NFT', function([userOne, userTwo, userThree]) {
+contract('NFT-order-based', function([userOne, userTwo, userThree]) {
 
   async function deployContracts(){
     // deploy contracts

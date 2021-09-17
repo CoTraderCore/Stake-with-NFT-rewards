@@ -6,7 +6,7 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/math/SafeMath.sol";
 
 
-contract NFT is ERC721, Ownable {
+contract NFTOrderBased is ERC721, Ownable {
   using SafeMath for uint256;
 
   uint256 public tokenCounter;
@@ -53,7 +53,7 @@ contract NFT is ERC721, Ownable {
     returns (uint256)
   {
     require(!allNFTsAssigned, "All NFTs assigned");
-    // create new vimpire token
+    // create new nft token
     uint256 newItemId = tokenCounter;
     _safeMint(_for, newItemId);
 
