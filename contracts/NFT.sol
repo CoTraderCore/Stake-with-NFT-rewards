@@ -13,6 +13,8 @@ contract NFT is ERC721, Ownable {
   bool public allNFTsAssigned;
   uint256 maxNFTsSupply;
   address public platformAddress;
+  string public url;
+  string public nftFormat;
 
   struct Offer {
     bool isForSale;
@@ -29,12 +31,19 @@ contract NFT is ERC721, Ownable {
   event NFTBought(uint indexed NFTIndex, uint value, address indexed fromAddress, address indexed toAddress);
   event NFTNoLongerForSale(uint indexed NFTIndex);
 
-  constructor (uint256 _maxNFTsSupply, address _platformAddress)
+  constructor (
+    uint256 _maxNFTsSupply,
+    address _platformAddress,
+    string memory _url,        // link to ipfs WITHOUT nft id + nftFormat
+    string memory _nftFormat   // .json, .png ect
+  )
     public
     ERC721 ("NFT", "NFT")
   {
     maxNFTsSupply = _maxNFTsSupply;
     platformAddress = _platformAddress;
+    url = _url;
+    nftFormat = _nftFormat;
   }
 
   // owner can create new nft
@@ -122,7 +131,7 @@ contract NFT is ERC721, Ownable {
     emit NFTBought(NFTIndex, msg.value, seller, msg.sender);
   }
 
-  // transfer to another address 
+  // transfer to another address
   function transfer(address _to, uint256 _tokenId) external {
     _transfer(msg.sender, _to, _tokenId);
   }
@@ -131,5 +140,9 @@ contract NFT is ERC721, Ownable {
   function noLongerForSale(uint NFTIndex) private {
     NFTsOfferedForSale[NFTIndex] = Offer(false, NFTIndex, msg.sender, 0, address(0));
     NFTNoLongerForSale(NFTIndex);
+  }
+
+  function viewNFTURL(string memory tokenId) external view returns(string memory url){
+     (abi.encodePacked(url, tokenId, nftFormat));
   }
 }

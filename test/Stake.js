@@ -44,7 +44,7 @@ contract('Stake-claim-able-test', function([userOne, userTwo, userThree]) {
     weth = await WETH.new()
     uniswapV2Router = await UniswapV2Router.new(uniswapV2Factory.address, weth.address)
     token = await TOKEN.new(toWei(String(100000)))
-    nft = await NFT.new(10000, userOne)
+    nft = await NFT.new(10000, userOne, "https://gateway.pinata.cloud/ipfs/QmNVZdcfwaadBzKkDFfGXtqNdKwEbMsQY5xZJxfSxNcK2i/1/", ".json")
 
     // add token liquidity
     await token.approve(uniswapV2Router.address, toWei(String(500)))

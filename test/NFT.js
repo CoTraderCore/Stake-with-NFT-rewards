@@ -21,7 +21,7 @@ contract('NFT', function([userOne, userTwo, userThree]) {
 
   async function deployContracts(){
     // deploy contracts
-    nft = await NFT.new(nftsSupply, userOne)
+    nft = await NFT.new(nftsSupply, userOne, "https://gateway.pinata.cloud/ipfs/QmNVZdcfwaadBzKkDFfGXtqNdKwEbMsQY5xZJxfSxNcK2i/1/", ".json")
     platformAddress = userOne
   }
 
