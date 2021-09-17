@@ -142,7 +142,7 @@ contract NFT is ERC721, Ownable {
     NFTNoLongerForSale(NFTIndex);
   }
 
-  function viewNFTURL(string memory tokenId) external view returns(string memory url){
-     (abi.encodePacked(url, tokenId, nftFormat));
+  function viewNFTURL(string memory tokenId) external view returns(string memory){
+    return string(abi.encodePacked(url, tokenId, nftFormat));
   }
 }
