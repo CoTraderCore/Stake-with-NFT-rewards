@@ -9,7 +9,6 @@ import "@openzeppelin/contracts/math/SafeMath.sol";
 contract NFTWithoutOrder is ERC721, Ownable {
   using SafeMath for uint256;
 
-  bool public allNFTsAssigned;
   uint256 maxNFTsSupply;
   address public platformAddress;
   string public url;
@@ -55,13 +54,9 @@ contract NFTWithoutOrder is ERC721, Ownable {
   {
     require(!indexUsed[_index], "Index used");
     require(_index <= _maxNFTsSupply, "Max index");
-    require(!allNFTsAssigned, "All NFTs assigned");
-    
+
     // create new nft token
     _safeMint(_for, _index);
-
-    if(_index == maxNFTsSupply)
-      allNFTsAssigned = true;
 
     indexUsed[_index] = true;
 
@@ -75,7 +70,6 @@ contract NFTWithoutOrder is ERC721, Ownable {
   )
     external
   {
-    require(allNFTsAssigned, "Not all NFTs assigned");
     require(ownerOf(NFTIndex) == msg.sender, "Not owner");
     require(NFTIndex <= maxNFTsSupply, "Wrong index");
 
@@ -91,7 +85,6 @@ contract NFTWithoutOrder is ERC721, Ownable {
   )
     external
   {
-    require(allNFTsAssigned, "Not all NFTs assigned");
     require(ownerOf(NFTIndex) == msg.sender, "Not owner");
     require(NFTIndex <= maxNFTsSupply, "Wrong index");
 
@@ -101,7 +94,6 @@ contract NFTWithoutOrder is ERC721, Ownable {
 
   // buy NFT by index
   function buy(uint NFTIndex) external payable {
-    require(allNFTsAssigned, "Not all NFTs assigned");
     require(NFTIndex <= maxNFTsSupply, "Wrong index");
 
     Offer memory offer = NFTsOfferedForSale[NFTIndex];
