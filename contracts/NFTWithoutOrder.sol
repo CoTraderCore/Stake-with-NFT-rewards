@@ -50,17 +50,14 @@ contract NFTWithoutOrder is ERC721, Ownable {
   function createNewFor(address _for, uint256 _index)
     external
     onlyOwner
-    returns (uint256)
   {
     require(!indexUsed[_index], "Index used");
-    require(_index <= _maxNFTsSupply, "Max index");
+    require(_index <= maxNFTsSupply, "Max index");
 
     // create new nft token
     _safeMint(_for, _index);
 
     indexUsed[_index] = true;
-
-    return newItemId;
   }
 
   // offer NFT for all users
