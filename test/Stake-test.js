@@ -21,8 +21,8 @@ const UniswapV2Router = artifacts.require('./UniswapV2Router02.sol')
 const UniswapV2Pair = artifacts.require('./UniswapV2Pair.sol')
 const WETH = artifacts.require('./WETH9.sol')
 const TOKEN = artifacts.require('./Token.sol')
-const Stake = artifacts.require('./StakeWithoutOrderNFT.sol')
-const NFT = artifacts.require('./NFTWithoutOrder.sol')
+const Stake = artifacts.require('./Stake.sol')
+const NFT = artifacts.require('./NFT.sol')
 
 const Beneficiary = "0x6ffFe11A5440fb275F30e0337Fc296f938a287a5"
 

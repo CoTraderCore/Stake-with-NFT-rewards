@@ -10,7 +10,7 @@ require('chai')
   .use(require('chai-bignumber')(BigNumber))
   .should()
 
-const NFT = artifacts.require('./NFTWithoutOrder.sol')
+const NFT = artifacts.require('./NFT.sol')
 const nftsSupply = 10
 const url = "https://gateway.pinata.cloud/ipfs/QmNVZdcfwaadBzKkDFfGXtqNdKwEbMsQY5xZJxfSxNcK2i/1/"
 const nftType = ".json"
@@ -19,7 +19,7 @@ let nft,
     platformAddress
 
 
-contract('NFT-order-based', function([userOne, userTwo, userThree]) {
+contract('NFT', function([userOne, userTwo, userThree]) {
 
   async function deployContracts(){
     // deploy contracts

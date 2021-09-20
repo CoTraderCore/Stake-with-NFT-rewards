@@ -5,7 +5,7 @@ import "@openzeppelin/contracts/math/SafeMath.sol";
 import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
-import "./interfaces/INFTWithoutOrder.sol";
+import "./interfaces/INFT.sol";
 
 contract Owned {
     address public owner;
@@ -95,9 +95,9 @@ contract TokenWrapper is ReentrancyGuard {
 }
 
 
-contract StakeWithoutOrderNFT is TokenWrapper, RewardsDistributionRecipient {
+contract Stake is TokenWrapper, RewardsDistributionRecipient {
     IERC20 public rewardsToken;
-    INFTWithoutOrder public NFT;
+    INFT public NFT;
     uint256 public DURATION;
 
     uint256 public periodFinish = 0;
@@ -126,7 +126,7 @@ contract StakeWithoutOrderNFT is TokenWrapper, RewardsDistributionRecipient {
         uint256 _maxAmountNFTForClaim
     ) public TokenWrapper(_stakingToken) Owned(_owner) {
         rewardsToken = IERC20(_rewardsToken);
-        NFT = INFTWithoutOrder(_NFT);
+        NFT = INFT(_NFT);
         DURATION = _DURATION;
         maxAmountNFTForClaim = _maxAmountNFTForClaim;
     }

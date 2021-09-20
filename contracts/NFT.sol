@@ -6,11 +6,9 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/math/SafeMath.sol";
 
 
-contract NFTOrderBased is ERC721, Ownable {
+contract NFT is ERC721, Ownable {
   using SafeMath for uint256;
 
-  uint256 public tokenCounter;
-  bool public allNFTsAssigned;
   uint256 maxNFTsSupply;
   address public platformAddress;
   string public url;
@@ -26,6 +24,8 @@ contract NFTOrderBased is ERC721, Ownable {
 
   // A record of NFTs that are offered for sale at a specific minimum value, and perhaps to a specific person
   mapping (uint => Offer) public NFTsOfferedForSale;
+  // A record created indexes
+  mapping (uint => bool) public indexUsed;
 
   event NFTOffered(uint indexed NFTIndex, uint minValue, address indexed toAddress);
   event NFTBought(uint indexed NFTIndex, uint value, address indexed fromAddress, address indexed toAddress);
@@ -47,23 +47,17 @@ contract NFTOrderBased is ERC721, Ownable {
   }
 
   // owner can create new nft
-  function createNewFor(address _for)
+  function createNewFor(address _for, uint256 _index)
     external
     onlyOwner
-    returns (uint256)
   {
-    require(!allNFTsAssigned, "All NFTs assigned");
+    require(!indexUsed[_index], "Index used");
+    require(_index <= maxNFTsSupply, "Max index");
+
     // create new nft token
-    uint256 newItemId = tokenCounter;
-    _safeMint(_for, newItemId);
+    _safeMint(_for, _index);
 
-    // update counter
-    tokenCounter = tokenCounter + 1;
-
-    if(tokenCounter >= maxNFTsSupply)
-      allNFTsAssigned = true;
-
-    return newItemId;
+    indexUsed[_index] = true;
   }
 
   // offer NFT for all users
@@ -73,7 +67,6 @@ contract NFTOrderBased is ERC721, Ownable {
   )
     external
   {
-    require(allNFTsAssigned, "Not all NFTs assigned");
     require(ownerOf(NFTIndex) == msg.sender, "Not owner");
     require(NFTIndex <= maxNFTsSupply, "Wrong index");
 
@@ -89,7 +82,6 @@ contract NFTOrderBased is ERC721, Ownable {
   )
     external
   {
-    require(allNFTsAssigned, "Not all NFTs assigned");
     require(ownerOf(NFTIndex) == msg.sender, "Not owner");
     require(NFTIndex <= maxNFTsSupply, "Wrong index");
 
@@ -99,7 +91,6 @@ contract NFTOrderBased is ERC721, Ownable {
 
   // buy NFT by index
   function buy(uint NFTIndex) external payable {
-    require(allNFTsAssigned, "Not all NFTs assigned");
     require(NFTIndex <= maxNFTsSupply, "Wrong index");
 
     Offer memory offer = NFTsOfferedForSale[NFTIndex];
