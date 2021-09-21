@@ -27,6 +27,7 @@ contract NFT is ERC721, Ownable {
   // A record created indexes
   mapping (uint => bool) public isIndexUsed;
 
+  event NFTCreated(uint indexed NFTIndex, uint unixTime);
   event NFTOffered(uint indexed NFTIndex, uint minValue, address indexed toAddress);
   event NFTBought(uint indexed NFTIndex, uint value, address indexed fromAddress, address indexed toAddress);
   event NFTNoLongerForSale(uint indexed NFTIndex);
@@ -58,6 +59,8 @@ contract NFT is ERC721, Ownable {
     _safeMint(_for, _index);
 
     isIndexUsed[_index] = true;
+
+    emit NFTCreated(_index, now);
   }
 
   // offer NFT for all users
