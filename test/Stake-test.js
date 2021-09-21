@@ -23,6 +23,7 @@ const WETH = artifacts.require('./WETH9.sol')
 const TOKEN = artifacts.require('./Token.sol')
 const Stake = artifacts.require('./Stake.sol')
 const NFT = artifacts.require('./NFT.sol')
+const NFTPrice = toWei("1")
 
 const Beneficiary = "0x6ffFe11A5440fb275F30e0337Fc296f938a287a5"
 
@@ -67,7 +68,9 @@ contract('Stake-without-nft-order', function([userOne, userTwo, userThree]) {
       pair.address,
       nft.address,
       duration.days(30),
-      100
+      100,
+      NFTPrice,
+      userOne
     )
 
     // transfer ownership from nft to stake
@@ -96,7 +99,7 @@ contract('Stake-without-nft-order', function([userOne, userTwo, userThree]) {
 
   describe('Claim NFT', function() {
     it('User can not claim without stake', async function() {
-      await stake.claimNFT()
+      await stake.claimNFT(0)
       .should.be.rejectedWith(EVMRevert)
     })
 
@@ -106,7 +109,7 @@ contract('Stake-without-nft-order', function([userOne, userTwo, userThree]) {
       const toStake = await pair.balanceOf(userOne)
       await pair.approve(stake.address, toStake)
       await stake.stake(toStake)
-      await stake.claimNFT()
+      await stake.claimNFT(0)
       assert.equal(await nft.balanceOf(userOne), 1)
     })
 
@@ -116,9 +119,32 @@ contract('Stake-without-nft-order', function([userOne, userTwo, userThree]) {
       await pair.approve(stake.address, toStake)
       await stake.stake(toStake)
 
-      await stake.claimNFT()
-      await stake.claimNFT()
+      await stake.claimNFT(0)
+      await stake.claimNFT(1)
       .should.be.rejectedWith(EVMRevert)
+    })
+  })
+
+  describe('Buy NFT', function() {
+    it('User can not buy NFT without ETH', async function() {
+      await stake.buyNFT(0, {from:userTwo})
+      .should.be.rejectedWith(EVMRevert)
+    })
+
+    it('User can not buy NFT with not enough amount of ETH', async function() {
+      await stake.buyNFT(0, {from:userTwo, value:1})
+      .should.be.rejectedWith(EVMRevert)
+    })
+
+    it('User can buy NFT with enough amount of ETH and NFT receiver get ETH', async function() {
+      const receiverBalanceBefore = Number(fromWei(await web3.eth.getBalance(userOne)))
+
+      assert.equal(await nft.balanceOf(userTwo), 0)
+      await stake.buyNFT(0, {from:userTwo, value:NFTPrice})
+      assert.equal(await nft.balanceOf(userTwo), 1)
+
+      const receiverBalanceAfter = Number(fromWei(await web3.eth.getBalance(userOne)))
+      assert.isTrue(receiverBalanceAfter > receiverBalanceBefore)
     })
   })
 

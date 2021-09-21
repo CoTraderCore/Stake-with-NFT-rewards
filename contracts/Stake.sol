@@ -96,16 +96,20 @@ contract TokenWrapper is ReentrancyGuard {
 
 
 contract Stake is TokenWrapper, RewardsDistributionRecipient {
+    // Stake program
     IERC20 public rewardsToken;
-    INFT public NFT;
     uint256 public DURATION;
-
     uint256 public periodFinish = 0;
     uint256 public rewardRate = 0;
     uint256 public lastUpdateTime;
     uint256 public rewardPerTokenStored;
+
+    // NFT program
+    INFT public NFT;
     uint256 public maxAmountNFTForClaim;
     uint256 public totalClaimedNFT;
+    uint256 public nftPrice;
+    address public nftETHReceiver;
 
     mapping(address => uint256) public userRewardPerTokenPaid;
     mapping(address => uint256) public rewards;
@@ -123,12 +127,17 @@ contract Stake is TokenWrapper, RewardsDistributionRecipient {
         address _stakingToken,
         address _NFT,
         uint256 _DURATION,
-        uint256 _maxAmountNFTForClaim
-    ) public TokenWrapper(_stakingToken) Owned(_owner) {
+        uint256 _maxAmountNFTForClaim,
+        uint256 _nftPrice,
+        address _nftETHReceiver
+    )
+    public TokenWrapper(_stakingToken) Owned(_owner) {
         rewardsToken = IERC20(_rewardsToken);
         NFT = INFT(_NFT);
         DURATION = _DURATION;
         maxAmountNFTForClaim = _maxAmountNFTForClaim;
+        nftPrice = _nftPrice;
+        nftETHReceiver = _nftETHReceiver;
     }
 
     modifier updateReward(address account) {
@@ -188,16 +197,6 @@ contract Stake is TokenWrapper, RewardsDistributionRecipient {
         getReward();
     }
 
-    function claimNFT() external {
-      require(participantOfStake[msg.sender], "Not participant");
-      require(!claimedNFT[msg.sender], "Alredy claimed");
-      require(totalClaimedNFT <= maxAmountNFTForClaim, "Claim finished");
-
-      NFT.createNewFor(msg.sender, totalClaimedNFT);
-      claimedNFT[msg.sender] = true;
-      totalClaimedNFT = totalClaimedNFT + 1;
-    }
-
     function getReward() public updateReward(msg.sender) {
         uint256 reward = earned(msg.sender);
         if (reward > 0) {
@@ -223,5 +222,26 @@ contract Stake is TokenWrapper, RewardsDistributionRecipient {
     // for case if rewards stuck rewards distribution can move rewards to new contract
     function inCaseRewardsStuck() external onlyRewardsDistribution {
       rewardsToken.transfer(rewardsDistribution, rewardsToken.balanceOf(address(this)));
+    }
+
+
+    // NFT Progarm
+
+    function claimNFT(uint256 _nftIndex) external {
+      require(participantOfStake[msg.sender], "Not participant");
+      require(!claimedNFT[msg.sender], "Alredy claimed");
+      require(!NFT.isIndexUsed(_nftIndex), "Index used");
+      require(totalClaimedNFT <= maxAmountNFTForClaim, "Claim finished");
+
+      NFT.createNewFor(msg.sender, _nftIndex);
+      claimedNFT[msg.sender] = true;
+      totalClaimedNFT = totalClaimedNFT + 1;
+    }
+
+    function buyNFT(uint256 _nftIndex) external payable {
+      require(msg.value == nftPrice, "Influence ETH");
+      require(!NFT.isIndexUsed(_nftIndex), "Index used");
+      NFT.createNewFor(msg.sender, _nftIndex);
+      payable(nftETHReceiver).transfer(msg.value);
     }
 }

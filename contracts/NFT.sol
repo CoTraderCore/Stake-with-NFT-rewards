@@ -25,7 +25,7 @@ contract NFT is ERC721, Ownable {
   // A record of NFTs that are offered for sale at a specific minimum value, and perhaps to a specific person
   mapping (uint => Offer) public NFTsOfferedForSale;
   // A record created indexes
-  mapping (uint => bool) public indexUsed;
+  mapping (uint => bool) public isIndexUsed;
 
   event NFTOffered(uint indexed NFTIndex, uint minValue, address indexed toAddress);
   event NFTBought(uint indexed NFTIndex, uint value, address indexed fromAddress, address indexed toAddress);
@@ -51,13 +51,13 @@ contract NFT is ERC721, Ownable {
     external
     onlyOwner
   {
-    require(!indexUsed[_index], "Index used");
+    require(!isIndexUsed[_index], "Index used");
     require(_index <= maxNFTsSupply, "Max index");
 
     // create new nft token
     _safeMint(_for, _index);
 
-    indexUsed[_index] = true;
+    isIndexUsed[_index] = true;
   }
 
   // offer NFT for all users
