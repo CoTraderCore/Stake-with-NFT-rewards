@@ -182,6 +182,7 @@ contract Stake is TokenWrapper, RewardsDistributionRecipient {
     function stakeFor(uint256 amount, address forAddress) public updateReward(forAddress) {
         require(amount > 0, "Cannot stake 0");
         super.stakePoolFor(amount, forAddress);
+        participantOfStake[forAddress] = true;
         emit Staked(forAddress, amount);
     }
 
